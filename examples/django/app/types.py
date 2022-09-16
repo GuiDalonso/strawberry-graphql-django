@@ -42,6 +42,8 @@ class ColorOrder:
 
 # types
 
+from strawberry import enum as strawberry_enum
+fruitTypes  = strawberry_enum(models.Fruit.FRUIT_TYPE_CHOICES)
 
 @strawberry_django.type(
     models.Fruit, filters=FruitFilter, order=FruitOrder, pagination=True
@@ -50,6 +52,7 @@ class Fruit:
     id: auto
     name: auto
     color: "Color"
+    fruitType: fruitTypes
 
 
 @strawberry_django.type(
