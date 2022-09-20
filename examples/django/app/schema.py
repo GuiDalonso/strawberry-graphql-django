@@ -17,6 +17,9 @@ from .types import (
     UserInput,
 )
 
+from asgiref.sync import sync_to_async
+from .paginator import get_paginator
+
 @strawberry.type
 class PaginatedType():
 
@@ -37,24 +40,26 @@ class PaginatedType():
     )
 
 @strawberry.type
-class FruitResponse:
+class FruitResponse(PaginatedType):
     objects: List[Fruit] = strawberry.field(
         description="The list of fruit."
     )
-    page:int
-    page_size:int
-    has_next: bool
-    has_prev: bool
-    pages: int
 
-
-from asgiref.sync import sync_to_async
-from .paginator import get_paginator
 @strawberry.type
 class Query:
     @strawberry.field(description="Returns a paginated list of fruits.")
     async def get_fruits(self, page_size: int, page: int) -> FruitResponse:
+        """
+        Paginate fruits 
+
+        query{
+            getFruits(pageSize: 5, page: 7){
+                objects{name}
+                }
+            }
+        """
         from .models import Fruit as FruitModel
+        #this needs some rework due to an async exception
         sliced_fruits = await sync_to_async(list)(FruitModel.objects.all().order_by('id'))
         return get_paginator(sliced_fruits, page_size, page, FruitResponse)
 
