@@ -17,9 +17,62 @@ from .types import (
     UserInput,
 )
 
+@strawberry.type
+class PaginatedType():
+
+    page: int = strawberry.field(
+        description=""
+    )
+    page_size: int = strawberry.field(
+        description=""
+    )
+    pages: int = strawberry.field(
+        description=""
+    )
+    has_next: bool = strawberry.field(
+        description=""
+    )
+    has_prev: bool = strawberry.field(
+        description=""
+    )
+
+@strawberry.type
+class FruitResponse:
+    fruits: List[Fruit] = strawberry.field(
+        description="The list of fruit."
+    )
+    page_meta: PaginatedType = strawberry.field(
+        description="Metadata to aid in pagination."
+    )
+
+
 
 @strawberry.type
 class Query:
+    @strawberry.field(description="Returns a paginated list of users.")
+    def get_fruits(self, offset: int, limit: int) -> FruitResponse:
+        # slice the relevant user data.
+        sliced_fruits = strawberry_django.field()
+        # type cast the sliced data.
+        sliced_fruits = (List[Fruit], sliced_fruits)
+        # calculate the total items present.
+        total = len(strawberry_django.field())
+        # calculate the client's current page number.
+        page = ((offset-1) // limit) + 1
+        # calculate the total number of pages.
+        pages = (total // limit)
+        
+        return FruitResponse(
+            fruits=strawberry_django.field(),
+            page_meta=PaginatedType(
+                page=page,
+                page_size=limit,
+                pages=pages,
+                has_next=False,
+                has_prev=False,
+            )
+        )
+
     fruit: Fruit = strawberry_django.field()
     fruits: List[Fruit] = strawberry_django.field()
 

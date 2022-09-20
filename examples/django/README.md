@@ -11,6 +11,7 @@ Install project dependencies, run migrations, load test data and start developme
 ```shell
 cd examples/django
 poetry install
+poetry run ./manage.py makemigrations
 poetry run ./manage.py migrate
 poetry run ./manage.py loaddata berries
 poetry run ./manage.py runserver
