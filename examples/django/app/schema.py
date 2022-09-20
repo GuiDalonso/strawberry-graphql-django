@@ -38,40 +38,25 @@ class PaginatedType():
 
 @strawberry.type
 class FruitResponse:
-    fruits: List[Fruit] = strawberry.field(
+    objects: List[Fruit] = strawberry.field(
         description="The list of fruit."
     )
-    page_meta: PaginatedType = strawberry.field(
-        description="Metadata to aid in pagination."
-    )
+    page:int
+    page_size:int
+    has_next: bool
+    has_prev: bool
+    pages: int
 
 
-
+from asgiref.sync import sync_to_async
+from .paginator import get_paginator
 @strawberry.type
 class Query:
-    @strawberry.field(description="Returns a paginated list of users.")
-    def get_fruits(self, offset: int, limit: int) -> FruitResponse:
-        # slice the relevant user data.
-        sliced_fruits = strawberry_django.field()
-        # type cast the sliced data.
-        sliced_fruits = (List[Fruit], sliced_fruits)
-        # calculate the total items present.
-        total = len(strawberry_django.field())
-        # calculate the client's current page number.
-        page = ((offset-1) // limit) + 1
-        # calculate the total number of pages.
-        pages = (total // limit)
-        
-        return FruitResponse(
-            fruits=strawberry_django.field(),
-            page_meta=PaginatedType(
-                page=page,
-                page_size=limit,
-                pages=pages,
-                has_next=False,
-                has_prev=False,
-            )
-        )
+    @strawberry.field(description="Returns a paginated list of fruits.")
+    async def get_fruits(self, page_size: int, page: int) -> FruitResponse:
+        from .models import Fruit as FruitModel
+        sliced_fruits = await sync_to_async(list)(FruitModel.objects.all().order_by('id'))
+        return get_paginator(sliced_fruits, page_size, page, FruitResponse)
 
     fruit: Fruit = strawberry_django.field()
     fruits: List[Fruit] = strawberry_django.field()
